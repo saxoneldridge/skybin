@@ -5,7 +5,7 @@ export async function GET() {
 
   try {
     const response = await fetch(
-      `https://api.airtable.com/v0/${baseId}/${tableName}?pageSize=100&sort[0][field]=Score&sort[0][direction]=desc`,
+      `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}?pageSize=100`,
       {
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -15,27 +15,31 @@ export async function GET() {
     );
 
     if (!response.ok) {
-      throw new Error(`Airtable error: ${response.status}`);
+      const errText = await response.text();
+      throw new Error(`Airtable error: ${response.status} — ${errText}`);
     }
 
     const data = await response.json();
 
-    const clips = data.records.map((record) => ({
-      id: record.id,
-      title: record.fields.Title || 'Untitled',
-      bin: (record.fields.Bin || 'broll').toLowerCase(),
-      tags: record.fields.Tags
-        ? typeof record.fields.Tags === 'string'
-          ? record.fields.Tags.split(',').map((t) => t.trim())
-          : record.fields.Tags
-        : [],
-      score: record.fields.Score || 0,
-      timecode: record.fields.Timecode || '00:00:00',
-      duration: record.fields.Duration || '0:00',
-      notes: record.fields.Notes || '',
-      videoUrl: record.fields.VideoURL || '',
-      status: record.fields.Status || '',
-    }));
+    const clips = data.records.map((record) => {
+      const f = record.fields;
+      return {
+        id: record.id,
+        title: f.TITLE || f.Title || f.title || 'Untitled',
+        bin: ((f.BIN || f.Bin || f.bin || 'broll')).toLowerCase(),
+        tags: f.TAGS || f.Tags || f.tags
+          ? typeof (f.TAGS || f.Tags || f.tags) === 'string'
+            ? (f.TAGS || f.Tags || f.tags).split(',').map(t => t.trim())
+            : (f.TAGS || f.Tags || f.tags)
+          : [],
+        score: f.SCORE || f.Score || f.score || 0,
+        timecode: f.TIMECODE || f.Timecode || f.timecode || '00:00:00',
+        duration: f.DURATION || f.Duration || f.duration || '0:00',
+        notes: f.NOTES || f.Notes || f.notes || '',
+        videoUrl: f['VIDEO URL'] || f.VideoURL || f.videoURL || f['Video URL'] || '',
+        status: f.STATUS || f.Status || f.status || '',
+      };
+    });
 
     return Response.json({ clips });
   } catch (error) {
