@@ -6,9 +6,7 @@ export async function POST(request) {
       return Response.json({ error: "key required" }, { status: 400 });
     }
 
-    const videoUrl = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/skybin-videos/${key}`;
-
-    // Trigger Modal processing
+const videoUrl = `https://pub-87a78bbe5e4d41f2a712d51dbf833383.r2.dev/${key}`;    // Trigger Modal processing
     const modalResponse = await fetch(process.env.MODAL_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
