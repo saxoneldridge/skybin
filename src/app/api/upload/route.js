@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
 const R2 = new S3Client({
   region: "auto",
   endpoint: `https://5474cae236590e9018ddc4d1dccfffaf.r2.cloudflarestorage.com`,
@@ -9,7 +8,6 @@ const R2 = new S3Client({
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
 });
-
 export async function POST(request) {
   try {
     const { filename, contentType } = await request.json();
@@ -23,8 +21,13 @@ export async function POST(request) {
       ContentType: contentType,
     });
     const uploadUrl = await getSignedUrl(R2, command, { expiresIn: 3600 });
-    const videoUrl = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/skybin-videos/${key}`;
-    return Response.json({ uploadUrl, key, videoUrl });
+    // Trigger Modal webhook after getting upload URL
+    const videoUrl = `https://pub-${process.env.R2_ACCOUNT_ID}.r2.dev/${key}`;
+    return Response.json({ 
+      uploadUrl, 
+      key,
+      videoUrl
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
