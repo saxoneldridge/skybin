@@ -5,7 +5,7 @@ export async function GET() {
 
   try {
     const response = await fetch(
-      `https://api.airtable.com/v0/${baseId}/${tableName}?pageSize=100&sort[0][field]=Score&sort[0][direction]=desc`,
+      `https://api.airtable.com/v0/${baseId}/${tableName}?pageSize=100&sort[0][field]=SCORE&sort[0][direction]=desc`,
       {
         headers: { Authorization: `Bearer ${apiKey}` },
         cache: 'no-store',
